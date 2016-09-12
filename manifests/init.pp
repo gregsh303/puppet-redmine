@@ -275,7 +275,7 @@ class redmine (
   }
 
   if $redmine::attachments_storage_path and $redmine::attachments_storage_path != '' {
-    exec { "parents_of_attachments_storage_path": 
+    exec { "parents_of_attachments_storage_path":
       command => "mkdir -p $redmine::attachments_storage_path 2> /dev/null",
       path    => $path,
       creates => $redmine::attachments_storage_path,
@@ -304,26 +304,7 @@ class redmine (
 
   # set up database
   include "redmine::${redmine::db_type}"
-
-  exec { 'gem install bundler':
-    command     => 'gem install bundler --no-rdoc --no-ri',
-    user        => $redmine::user,
-    cwd         => $redmine::user_home,
-    path        => $path,
-    environment => $gemenv,
-    require     => User["$redmine::user"],
-    notify      => Exec['Install gems using bundler'],
-  }
-
-  exec { 'Install gems using bundler':
-    command     => "bundle install --path ${redmine::user_home}/.gem",
-    user        => $redmine::user,
-    cwd         => $redmine::install_dir,
-    path        => $path,
-    environment => $gemenv,
-    require     => Exec['gem install bundler'],
-    notify      => Exec['Generate secret token'],
-  }
+  class { '::ruby': }
 
 
   exec { 'Generate secret token':
@@ -333,7 +314,7 @@ class redmine (
     path        => $path,
     environment => $gemenv,
     refreshonly => true,
-    require     => Exec['Install gems using bundler'],
+    require     => Class['::ruby'],
     notify      => Exec['Run database migration'],
   }
 
@@ -344,7 +325,7 @@ class redmine (
     path        => $path,
     environment => $gemenv,
     refreshonly => true,
-    require     => [ Exec['Install gems using bundler'], Class["redmine::${redmine::db_type}"] ],
+    require     => [ Class['::ruby'], Class["redmine::${redmine::db_type}"] ],
   }
 
 #  TODO: create a boolean for this.  for now, don't load data
@@ -372,4 +353,3 @@ class redmine (
 }
 
 # vim: set et sw=2:
-

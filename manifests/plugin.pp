@@ -31,7 +31,7 @@ define redmine::plugin (
   include ::redmine
 
   $path = [
-    "${redmine::user_home}/bin", 
+    "${redmine::user_home}/bin",
     '/bin', '/usr/bin', '/usr/sbin'
   ]
 
@@ -54,7 +54,7 @@ define redmine::plugin (
     path        => $path,
     environment => $gemenv,
     refreshonly => true,
-    require     => Exec["Install gems using bundler"],
+    require     => Class['::ruby'],
     notify      => Exec["update db schema for plugin ${title}"],
   }
 
