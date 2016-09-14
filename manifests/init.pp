@@ -204,11 +204,11 @@ class redmine (
   }
 
   file { $redmine::user_home:
-    ensure => directory,
-    owner  => $redmine::user,
-    group  => $redmine::group,
-    mode   => '0755',
-    require => User["$redmine::user"],
+    ensure  => directory,
+    owner   => $redmine::user,
+    group   => $redmine::group,
+    mode    => '0755',
+    require => User[$redmine::user],
   }
 
   $src_url = "${redmine::install_url_base}/redmine-${redmine::version}.tar.gz"
@@ -275,20 +275,20 @@ class redmine (
   }
 
   if $redmine::attachments_storage_path and $redmine::attachments_storage_path != '' {
-    exec { "parents_of_attachments_storage_path":
-      command => "mkdir -p $redmine::attachments_storage_path 2> /dev/null",
+    exec { 'parents_of_attachments_storage_path':
+      command => "mkdir -p ${redmine::attachments_storage_path} 2> /dev/null",
       path    => $path,
       creates => $redmine::attachments_storage_path,
-      require => User["$redmine::user"],
-      notify  => File["$redmine::attachments_storage_path"],
+      require => User[$redmine::user],
+      notify  => File[$redmine::attachments_storage_path],
     }
 
-    file { "$redmine::attachments_storage_path":
+    file { $redmine::attachments_storage_path:
       ensure  => directory,
       path    => $redmine::attachments_storage_path,
       owner   => $redmine::user,
       group   => $redmine::group,
-      require => Exec["parents_of_attachments_storage_path"],
+      require => Exec['parents_of_attachments_storage_path'],
       recurse => true,
     }
   }
@@ -304,8 +304,10 @@ class redmine (
 
   # set up database
   include "redmine::${redmine::db_type}"
-  class { '::ruby': }
-
+  class { '::ruby::dev': }
+  ruby::bundle { 'redmine:'
+    user  => $redmine::user,
+  }
 
   exec { 'Generate secret token':
     command     => 'bundle exec rake generate_secret_token',
