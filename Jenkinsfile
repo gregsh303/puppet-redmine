@@ -2,6 +2,7 @@ node ('sl6') {
   def workspace = pwd()
   try {
     git poll:true, credentialsId: '5eb69815-afdc-47ab-8ccf-d3ef271af6c1', url: 'git@gitlab.devops.geointservices.io:DevOps-InfraAsCode/Puppet-Redmine.git'
+
     stage 'Build Setup'
     withEnv(["GEM_HOME=${workspace}", "PATH=${workspace}/bin:$PATH"]) {
       sh 'gem install bundler'
